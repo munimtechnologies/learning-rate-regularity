@@ -35,12 +35,21 @@ look "regular"?
    SD / mean). It also asks whether students differ in *how soon* they learn on a shared curve with a ceiling,
    rather than in a per-step rate. Four predictions are fixed in advance. It uses only the fits that phases 1
    and 2 already produce.
+4. **Theory for phase 2b ([THEORY-2b.md](THEORY-2b.md)).** A worked derivation, done before any result came in.
+   When students differ in time scale on a curve with a ceiling, the iAFM's speed ratio behaves like
+   R_true^e. The "ceiling exponent" e falls from 1 towards 0 as the practice window covers more of the curve.
+   Past a reversal point (about 95% of the way to the ceiling within the window), faster learners get
+   *shallower* fitted slopes. A reported ratio of 1.14 is compatible with a twofold true speed difference when e
+   is about 0.19. Amplitude differences, by contrast, give a ratio that does not depend on the window. The note
+   also gives first-order values that phase 1's simulation should approach.
 
 ## Files
 
 - `PLAN-1.md`, `sim.py`, `fit.R`, `test_sim.py`: phase 1 (simulation).
 - `PLAN-2.md`, `realdata.py`, `fit2.R`, `test_realdata.py`: phase 2 (real data; aggregate results only).
 - `PLAN-2b.md`, `analyze2b.py`, `test_analyze2b.py`: phase 2b (secondary analysis of the phase 1 and 2 fits).
+- `THEORY-2b.md`, `ceiling.py`, `test_ceiling.py`: the ceiling exponent and the reversal point (standard library
+  only; `python ceiling.py --out-dir out` writes every table).
 - `RESULTS-1.md`, `RESULTS-2.md` and `RESULTS-2b.md` will hold the results, whatever they show.
 
 Run it yourself: install R and lme4, then `python sim.py --out-dir out` or
