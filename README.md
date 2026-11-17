@@ -19,24 +19,25 @@ look "regular"?
 ## Phases
 
 1. **Phase 1, simulation (preregistered in [PLAN-1.md](PLAN-1.md)).** Students with known learning-speed
-   differences (1x to about 2x), three true shapes of learning (the model's own straight line in log-odds,
-   saturating learning, and all-or-none BKT learning), and five practice designs (fixed length, two fixed
-   truncations, three-in-a-row mastery, BKT mastery). Each data set is fitted with the same iAFM as in the
+   differences (1x to about 2x) and three true shapes of learning: the model's own straight line in log-odds,
+   saturating learning, and all-or-none BKT learning. Five practice designs: fixed length, two fixed
+   truncations, three-in-a-row mastery and BKT mastery. Each data set is fitted with the same iAFM as in the
    *PNAS* paper (R, lme4), and the reported speed spread is compared with the truth. Eight predictions are fixed
    in advance.
-2. **Phase 2, real data (planned).** Use the phase 1 calibration to translate the published regularity into a
-   bound on real differences in learning speed. Then fit learning-curve models with better shapes to open
-   tutoring logs.
+2. **Phase 2, real data (preregistered in [PLAN-2.md](PLAN-2.md)).** Two open tutoring logs with mastery-based
+   practice: KDD Cup 2010 Algebra I 2005-2006 (Cognitive Tutor) and ASSISTments 2009-2010 skill builders.
+   Each is fitted with the iAFM and with a concave version (log(1 + t)) on the first 5, 10 and 25
+   opportunities, with 20 bootstrap resamples of students. The test: does the better-shaped curve shrink the
+   window dependence that Lee et al. found? Three predictions are fixed in advance.
 
 ## Files
 
-- `PLAN-1.md`: the phase 1 preregistration (question, parameters, predictions, limits).
-- `sim.py`: data generation, stopping rules, summary and verdicts (Python standard library).
-- `fit.R`: one iAFM fit with lme4.
-- `test_sim.py`: unit tests (`python -m unittest -v test_sim`).
-- `RESULTS-1.md` will hold the phase 1 results, whatever they show.
+- `PLAN-1.md`, `sim.py`, `fit.R`, `test_sim.py`: phase 1 (simulation).
+- `PLAN-2.md`, `realdata.py`, `fit2.R`, `test_realdata.py`: phase 2 (real data; aggregate results only).
+- `RESULTS-1.md` and `RESULTS-2.md` will hold the results, whatever they show.
 
-Run it yourself: install R and lme4, then `python sim.py --out-dir out`.
+Run it yourself: install R and lme4, then `python sim.py --out-dir out` or
+`python realdata.py --data-dir data --out-dir out` (the latter downloads the two open zip files).
 
 ## Contact
 
