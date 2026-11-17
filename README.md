@@ -29,15 +29,23 @@ look "regular"?
    Each is fitted with the iAFM and with a concave version (log(1 + t)) on the first 5, 10 and 25
    opportunities, with 20 bootstrap resamples of students. The test: does the better-shaped curve shrink the
    window dependence that Lee et al. found? Three predictions are fixed in advance.
+3. **Phase 2b, the rescaling test (preregistered in [PLAN-2b.md](PLAN-2b.md)).** If a curve-shape error only
+   rescaled every student's slope, the spread and the mean slope would change together and the speed ratio would
+   not depend on the window. Phase 2b splits the window dependence into rescaling and an excess (the change in
+   SD / mean). It also asks whether students differ in *how soon* they learn on a shared curve with a ceiling,
+   rather than in a per-step rate. Four predictions are fixed in advance. It uses only the fits that phases 1
+   and 2 already produce.
 
 ## Files
 
 - `PLAN-1.md`, `sim.py`, `fit.R`, `test_sim.py`: phase 1 (simulation).
 - `PLAN-2.md`, `realdata.py`, `fit2.R`, `test_realdata.py`: phase 2 (real data; aggregate results only).
-- `RESULTS-1.md` and `RESULTS-2.md` will hold the results, whatever they show.
+- `PLAN-2b.md`, `analyze2b.py`, `test_analyze2b.py`: phase 2b (secondary analysis of the phase 1 and 2 fits).
+- `RESULTS-1.md`, `RESULTS-2.md` and `RESULTS-2b.md` will hold the results, whatever they show.
 
 Run it yourself: install R and lme4, then `python sim.py --out-dir out` or
-`python realdata.py --data-dir data --out-dir out` (the latter downloads the two open zip files).
+`python realdata.py --data-dir data --out-dir out` (the latter downloads the two open zip files). Phase 2b needs
+only Python: `python analyze2b.py --fits2 fits2.csv --fits1 fits.csv --out-dir out`.
 
 ## Contact
 
