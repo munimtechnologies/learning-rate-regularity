@@ -42,6 +42,17 @@ look "regular"?
    *shallower* fitted slopes. A reported ratio of 1.14 is compatible with a twofold true speed difference when e
    is about 0.19. Amplitude differences, by contrast, give a ratio that does not depend on the window. The note
    also gives first-order values that phase 1's simulation should approach.
+5. **Phase 3, the direct test (preregistered in [PLAN-3.md](PLAN-3.md)).** Each skill in the phase 2 data gets a
+   learning curve with a ceiling, A(1 - exp(-c t)). Three kinds of student difference are then fitted, each with
+   the same number of parameters:
+   - **time scale:** a random slope on the hump A c t exp(-c t), where faster learners pull ahead and everyone
+     meets at the ceiling;
+   - **amplitude:** a random slope on A(1 - exp(-c t)), where some curves rise higher;
+   - **raw rate:** a random slope on t, the iAFM's kind of difference.
+
+   The time-scale SD gives a 75th/25th-percentile speed ratio directly. A 20-dataset known-truth check must first
+   show that the method can tell time scale from amplitude. Four predictions are fixed in advance. The wow would
+   be students who look "regular" differing 1.5-fold or more in how soon they reach mastery.
 
 ## Files
 
@@ -50,11 +61,14 @@ look "regular"?
 - `PLAN-2b.md`, `analyze2b.py`, `test_analyze2b.py`: phase 2b (secondary analysis of the phase 1 and 2 fits).
 - `THEORY-2b.md`, `ceiling.py`, `test_ceiling.py`: the ceiling exponent and the reversal point (standard library
   only; `python ceiling.py --out-dir out` writes every table).
-- `RESULTS-1.md`, `RESULTS-2.md` and `RESULTS-2b.md` will hold the results, whatever they show.
+- `PLAN-3.md`, `phase3.py`, `fit3.R`, `test_phase3.py`, `setup3.sh`: phase 3 (time scale vs amplitude; uses
+  `realdata.py` for loading, so the students and skills are the same as in phase 2).
+- `RESULTS-1.md`, `RESULTS-2.md`, `RESULTS-2b.md` and `RESULTS-3.md` will hold the results, whatever they show.
 
-Run it yourself: install R and lme4, then `python sim.py --out-dir out` or
-`python realdata.py --data-dir data --out-dir out` (the latter downloads the two open zip files). Phase 2b needs
-only Python: `python analyze2b.py --fits2 fits2.csv --fits1 fits.csv --out-dir out`.
+Run it yourself: install R and lme4, then `python sim.py --out-dir out`,
+`python realdata.py --data-dir data --out-dir out` or `python phase3.py --data-dir data --out-dir out` (the
+last two download the two open zip files). Phase 2b needs only Python:
+`python analyze2b.py --fits2 fits2.csv --fits1 fits.csv --out-dir out`.
 
 ## Contact
 
