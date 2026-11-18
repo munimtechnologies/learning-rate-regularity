@@ -53,6 +53,15 @@ look "regular"?
    The time-scale SD gives a 75th/25th-percentile speed ratio directly. A 20-dataset known-truth check must first
    show that the method can tell time scale from amplitude. Four predictions are fixed in advance. The wow would
    be students who look "regular" differing 1.5-fold or more in how soon they reach mastery.
+6. **Theory for phase 3 ([THEORY-3.md](THEORY-3.md)).** Written before any phase 3 result, with no change to
+   PLAN-3's predictions. Three points:
+   - The three models differ only in how fast the gap between students closes, so time scale and amplitude can
+     be told apart only in skills practised out to about 1 / c opportunities. Their regressors correlate 0.996
+     when practice stops at half of 1 / c, and 0.64 when it runs to 2.5 times 1 / c.
+   - A head start on a common curve is exactly intercept plus a negative amplitude slope. The iAFM reads it as
+     slower learning.
+   - The linearized time-scale SD is biased down by about 2-12% at a true twofold speed difference, so T3 is
+     conservative.
 
 ## Files
 
@@ -63,6 +72,8 @@ look "regular"?
   only; `python ceiling.py --out-dir out` writes every table).
 - `PLAN-3.md`, `phase3.py`, `fit3.R`, `test_phase3.py`, `setup3.sh`: phase 3 (time scale vs amplitude; uses
   `realdata.py` for loading, so the students and skills are the same as in phase 2).
+- `THEORY-3.md`, `theory3.py`, `test_theory3.py`: what phase 3 can identify, the head-start identity and the
+  linearization bias (standard library only; `python theory3.py --out-dir out`).
 - `RESULTS-1.md`, `RESULTS-2.md`, `RESULTS-2b.md` and `RESULTS-3.md` will hold the results, whatever they show.
 
 Run it yourself: install R and lme4, then `python sim.py --out-dir out`,

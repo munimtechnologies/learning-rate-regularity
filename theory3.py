@@ -1,0 +1,169 @@
+"""THEORY-3 checks for phase 3 of MV2's learning-rate-regularity project.
+
+What can phase 3's linearized time-scale model see, and how biased is it? Worked out before any phase 3 fit.
+Standard library only. `python theory3.py --out-dir out` writes out/theory3.md.
+
+Copyright 2026 Munim, Inc. Licensed under the Apache License, Version 2.0 (Apache-2.0).
+Made with AI agents working in the name of MV2 of Munim, Inc.
+
+Notation (one skill): x = c t, ceiling curve A (1 - exp(-x)).
+- time scale: a student exp(v) times faster has A (1 - exp(-x e^v)); the gap to the typical student is
+  gap_ts(v, x) = A (exp(-x) - exp(-x e^v)); its first-order term in v is v * hump, hump = A x exp(-x).
+- amplitude: A (1 - exp(-x)) is the regressor of phase 3's "amp" model.
+- head start: a student tau opportunities further along the same curve.
+A design is a list of points (A, x, weight).
+"""
+import argparse
+import math
+import os
+
+SQRT3 = math.sqrt(3.0)
+
+
+def gap_ts(v, x, A=1.0):
+    """Exact logit gap of a student exp(v) times faster than typical, on the curve A (1 - exp(-x))."""
+    return A * (math.exp(-x) - math.exp(-x * math.exp(v)))
+
+
+def hump(x, A=1.0):
+    """Phase 3's time-scale regressor h = A x exp(-x) (A c t exp(-c t))."""
+    return A * x * math.exp(-x)
+
+
+def amp(x, A=1.0):
+    """Phase 3's amplitude regressor a = A (1 - exp(-x))."""
+    return A * (1.0 - math.exp(-x))
+
+
+def gap_head(tau, c, t, A=1.0):
+    """Exact logit gap of a student who starts tau opportunities further along the same curve."""
+    return A * (1.0 - math.exp(-c * (t + tau))) - A * (1.0 - math.exp(-c * t))
+
+
+def design(c, n, A=1.0, w=1.0):
+    """Opportunities t = 0..n-1 of one skill with rate c, equal weights."""
+    return [(A, c * t, w) for t in range(n)]
+
+
+def sim_like_design(n=6):
+    """Nine skills spanning phase 3's simulation ranges: A in {1.5, 2.25, 3}, c in {0.1, 0.25, 0.4}."""
+    pts = []
+    for A in (1.5, 2.25, 3.0):
+        for c in (0.1, 0.25, 0.4):
+            pts.extend(design(c, n, A))
+    return pts
+
+
+def _cov(points, f, g):
+    W = sum(w for _, _, w in points)
+    mf = sum(w * f(A, x) for A, x, w in points) / W
+    mg = sum(w * g(A, x) for A, x, w in points) / W
+    return sum(w * (f(A, x) - mf) * (g(A, x) - mg) for A, x, w in points) / W
+
+
+def _h(A, x):
+    return hump(x, A)
+
+
+def _a(A, x):
+    return amp(x, A)
+
+
+def _lin(A, x):
+    return x
+
+
+def project(points, fn):
+    """Slope on the hump when fn(A, x) is regressed on (1, hump) over the design (weighted least squares)."""
+    return _cov(points, fn, _h) / _cov(points, _h, _h)
+
+
+def slope(points, v):
+    """What the linearized time-scale model reads for a student whose true log speed is v."""
+    return project(points, lambda A, x: gap_ts(v, x, A))
+
+
+def corr(points, f, g):
+    return _cov(points, f, g) / math.sqrt(_cov(points, f, f) * _cov(points, g, g))
+
+
+def moments(points):
+    """Second-order bias coefficients. slope(v) = v + alpha v^2 + beta v^3 + O(v^4), so
+    SD(slope) / s = 1 + kappa s^2 + O(s^4) with kappa = alpha^2 + 3 beta, for v ~ N(0, s^2)."""
+    vh = _cov(points, _h, _h)
+    M1 = _cov(points, lambda A, x: hump(x, A) * x, _h) / vh
+    M2 = _cov(points, lambda A, x: hump(x, A) * x * x, _h) / vh
+    alpha = (1.0 - M1) / 2.0
+    beta = (1.0 - 3.0 * M1 + M2) / 6.0
+    return {"M1": M1, "M2": M2, "alpha": alpha, "beta": beta, "kappa": alpha * alpha + 3.0 * beta}
+
+
+def sd_ratio(points, s, n=2001, span=8.0):
+    """SD of slope(v) over v ~ N(0, s^2), divided by s (trapezoid rule on [-span s, span s])."""
+    step = 2.0 * span * s / (n - 1)
+    m0 = m1 = m2 = 0.0
+    for i in range(n):
+        v = -span * s + i * step
+        wt = math.exp(-0.5 * (v / s) ** 2) * (0.5 if i in (0, n - 1) else 1.0)
+        u = slope(points, v)
+        m0 += wt
+        m1 += wt * u
+        m2 += wt * u * u
+    mean = m1 / m0
+    return math.sqrt(m2 / m0 - mean * mean) / s
+
+
+def gh3_sd_ratio(points, s):
+    """Same as sd_ratio with 3-point Gauss-Hermite (nodes 0, +-sqrt(3) s; weights 2/3, 1/6, 1/6)."""
+    up = slope(points, SQRT3 * s)
+    dn = slope(points, -SQRT3 * s)
+    mean = (up + dn) / 6.0
+    return math.sqrt((up * up + dn * dn) / 6.0 - mean * mean) / s
+
+
+def iafm_head_start_slope(c, n):
+    """Per-opportunity iAFM slope change per unit A q for a head start (gap A q exp(-c t)), t = 0..n-1."""
+    pts = design(c, n)
+    return c * _cov(pts, lambda A, x: math.exp(-x), _lin) / _cov(pts, _lin, _lin)
+
+
+def report():
+    rows = []
+    designs = [
+        ("c = 0.10, 6 opportunities (x up to 0.5)", design(0.10, 6)),
+        ("c = 0.25, 6 opportunities (x up to 1.25)", design(0.25, 6)),
+        ("c = 0.50, 6 opportunities (x up to 2.5)", design(0.50, 6)),
+        ("c = 0.10, 25 opportunities (x up to 2.4)", design(0.10, 25)),
+        ("nine skills like phase 3's simulation, 6 opportunities", sim_like_design(6)),
+    ]
+    out = ["# theory3.py output", "",
+           "Generated by `python theory3.py`. See THEORY-3.md for the derivation. Equal weights per opportunity.",
+           "", "| design | corr(ts, amp) | corr(ts, lin) | kappa | SD ratio s=0.3 | SD ratio s=0.5 | GH3 s=0.5 |",
+           "|---|---|---|---|---|---|---|"]
+    for name, pts in designs:
+        m = moments(pts)
+        rows.append((name, corr(pts, _h, _a), corr(pts, _h, _lin), m["kappa"],
+                     sd_ratio(pts, 0.3), sd_ratio(pts, 0.5), gh3_sd_ratio(pts, 0.5)))
+        out.append("| %s | %.4f | %.4f | %.4f | %.4f | %.4f | %.4f |" % rows[-1])
+    out += ["", "Fitted speed ratio exp(1.349 * SD) for a true ratio of 1.96 (s = 0.5) and 1.50 (s = 0.3006):", ""]
+    for name, _, _, _, r3, r5, _ in rows:
+        out.append("- %s: %.3f and %.3f" % (name, math.exp(1.349 * 0.5 * r5), math.exp(1.349 * 0.3006 * r3)))
+    out += ["", "iAFM slope change per opportunity per unit A q of head start (negative = looks slower):", ""]
+    for c in (0.1, 0.25, 0.5):
+        out.append("- c = %.2f, 6 opportunities: %.4f" % (c, iafm_head_start_slope(c, 6)))
+    return "\n".join(out) + "\n"
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--out-dir", default="out")
+    args = ap.parse_args()
+    os.makedirs(args.out_dir, exist_ok=True)
+    text = report()
+    with open(os.path.join(args.out_dir, "theory3.md"), "w", encoding="utf-8") as f:
+        f.write(text)
+    print(text)
+
+
+if __name__ == "__main__":
+    main()
