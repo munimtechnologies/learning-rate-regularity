@@ -62,6 +62,17 @@ look "regular"?
      slower learning.
    - The linearized time-scale SD is biased down by about 2-12% at a true twofold speed difference, so T3 is
      conservative.
+7. **Mastery stopping meets the ceiling ([THEORY-4.md](THEORY-4.md)).** Written before any result, with no
+   change to any preregistered prediction. Both real datasets stop practice at mastery, so each student's window
+   depends on their own speed. Three points:
+   - Any stopping rule that looks only at past answers changes what a wrong-shaped model estimates only through
+     survival weights. Under the true model it changes nothing.
+   - If the window shrinks in proportion to speed (idealised mastery), the straight line's ceiling exponent is
+     exactly 1 for any curve shape. THEORY-2b's attenuation needs windows that do not scale with speed. In
+     general, e = 1 + eta(cT)(1 - lambda), where lambda measures how fully the window scales. Three-in-a-row
+     stopping lies in between.
+   - Under mastery stopping, a raised starting level reads as *faster* learning, while a head start on a shared
+     curve reads as slower. The sign of the iAFM's intercept-slope correlation tells the two apart.
 
 ## Files
 
@@ -74,6 +85,8 @@ look "regular"?
   `realdata.py` for loading, so the students and skills are the same as in phase 2).
 - `THEORY-3.md`, `theory3.py`, `test_theory3.py`: what phase 3 can identify, the head-start identity and the
   linearization bias (standard library only; `python theory3.py --out-dir out`).
+- `THEORY-4.md`, `theory4.py`, `test_theory4.py`: mastery stopping, survival weights, the window-scaling exponent
+  and the prior-knowledge channels (standard library only; `python theory4.py --out-dir out`).
 - `RESULTS-1.md`, `RESULTS-2.md`, `RESULTS-2b.md` and `RESULTS-3.md` will hold the results, whatever they show.
 
 Run it yourself: install R and lme4, then `python sim.py --out-dir out`,
